@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MH.OS — Mohamed Hany</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0d0e14;--surf:#13141c;--bdr:rgba(255,255,255,0.07);--bdr2:rgba(255,255,255,0.15);
+  --acc:#00ff9d;--acc2:#3d9cff;--acc3:#ffb830;--red:#ff4757;
+  --txt:#c8ccd8;--dim:#5a5e72;--wht:#f0f2ff;
+  --glow:rgba(0,255,157,0.12);--tbh:52px;
+}
+[data-theme=amber]{--bg:#0f0c08;--surf:#161208;--acc:#ffb830;--acc2:#ff6b35;--glow:rgba(255,184,48,0.12);}
+[data-theme=blue]{--bg:#080d14;--surf:#0d1520;--acc:#3d9cff;--acc2:#7c5cfc;--glow:rgba(61,156,255,0.12);}
+[data-theme=red]{--bg:#140808;--surf:#1c0d0d;--acc:#ff4757;--acc2:#ff8c42;--glow:rgba(255,71,87,0.12);}
+[data-theme=pink]{--bg:#110a14;--surf:#1a0f1e;--acc:#e879f9;--acc2:#a855f7;--glow:rgba(232,121,249,0.12);}
+
+html,body{height:100%;}
+body{background:var(--bg);color:var(--txt);font-family:'Space Mono',monospace;overflow:hidden;transition:background 0.5s;}
+
+/* BOOT */
+#boot{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.8s;}
+#boot.out{opacity:0;pointer-events:none;}
+.b-logo{font-family:'Bebas Neue',sans-serif;font-size:5rem;letter-spacing:0.2em;color:var(--acc);text-shadow:0 0 40px var(--glow);margin-bottom:8px;}
+.b-sub{font-size:0.62rem;letter-spacing:0.3em;color:var(--dim);margin-bottom:48px;}
+.b-bar{width:280px;height:2px;background:rgba(255,255,255,0.05);}
+.b-fill{height:100%;background:var(--acc);width:0%;box-shadow:0 0 8px var(--acc);transition:width 0.06s;}
+.b-log{position:absolute;bottom:36px;left:36px;font-size:0.56rem;color:rgba(0,255,157,0.28);line-height:1.9;}
+
+/* DESKTOP */
+#desk{
+  position:fixed;inset:0;bottom:var(--tbh);overflow:hidden;
+  background:radial-gradient(ellipse 55% 45% at 25% 25%,var(--glow) 0%,transparent 65%),radial-gradient(ellipse 40% 50% at 80% 80%,rgba(61,156,255,0.04) 0%,transparent 60%),var(--bg);
+  transition:background 0.5s;
+}
+#desk::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,0.05) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;}
+.wa{position:absolute;pointer-events:none;}
+.wa1{top:10%;left:3%;font-family:'Bebas Neue',sans-serif;font-size:11rem;color:rgba(255,255,255,0.014);letter-spacing:-0.05em;}
+.wa2{bottom:8%;right:4%;font-family:'Crimson Pro',serif;font-style:italic;font-size:7rem;color:rgba(255,255,255,0.016);}
+
+/* TASKBAR */
+#tb{position:fixed;bottom:0;left:0;right:0;height:var(--tbh);background:rgba(8,8,14,0.95);backdrop-filter:blur(24px);border-top:1px solid var(--bdr);display:flex;align-items:center;padding:0 12px;gap:3px;z-index:500;}
+.tb-logo{display:flex;align-items:center;gap:7px;padding:5px 13px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);cursor:pointer;font-size:0.63rem;color:var(--acc);letter-spacing:0.1em;font-weight:700;transition:all 0.2s;margin-right:8px;}
+.tb-logo:hover{background:rgba(255,255,255,0.08);}
+.tb-apps{display:flex;gap:2px;flex:1;overflow:hidden;}
+.tba{display:flex;align-items:center;gap:6px;padding:5px 11px;border:1px solid transparent;cursor:pointer;font-family:'Space Mono',monospace;font-size:0.58rem;color:var(--dim);letter-spacing:0.04em;transition:all 0.15s;position:relative;white-space:nowrap;}
+.tba:hover{background:rgba(255,255,255,0.04);border-color:var(--bdr);color:var(--txt);}
+.tba.on{background:rgba(255,255,255,0.06);border-color:var(--bdr2);color:var(--wht);}
+.tba.on::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--acc);}
+.tbd{width:5px;height:5px;border-radius:50%;background:var(--dim);flex-shrink:0;}
+.tba.on .tbd{background:var(--acc);box-shadow:0 0 5px var(--acc);}
+.tb-clk{margin-left:auto;font-size:0.58rem;color:var(--dim);text-align:right;line-height:1.5;letter-spacing:0.04em;}
+
+/* DESKTOP ICONS */
+.di{position:absolute;display:flex;flex-direction:column;align-items:center;gap:6px;width:68px;cursor:pointer;padding:7px 3px;}
+.di:hover .dib{border-color:var(--acc);background:rgba(255,255,255,0.05);}
+.di:hover .dil{color:var(--wht);}
+.dib{width:44px;height:44px;background:rgba(255,255,255,0.03);border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:1.3rem;transition:all 0.2s;}
+.dil{font-size:0.5rem;color:var(--dim);text-align:center;letter-spacing:0.06em;line-height:1.3;}
+
+/* WINDOWS */
+.win{position:absolute;background:var(--surf);border:1px solid var(--bdr2);box-shadow:0 28px 70px rgba(0,0,0,0.7);display:flex;flex-direction:column;min-width:280px;min-height:160px;overflow:hidden;transition:box-shadow 0.2s,opacity 0.15s,transform 0.15s;transform-origin:center top;}
+.win.hide{opacity:0;pointer-events:none;transform:scale(0.96) translateY(8px);}
+.win.foc{border-color:rgba(255,255,255,0.22);box-shadow:0 36px 90px rgba(0,0,0,0.85);}
+.wtb{display:flex;align-items:center;padding:0 13px;height:33px;background:rgba(255,255,255,0.02);border-bottom:1px solid var(--bdr);cursor:move;flex-shrink:0;gap:8px;}
+.wds{display:flex;gap:5px;}
+.wd{width:11px;height:11px;border-radius:50%;cursor:pointer;transition:filter 0.15s;}
+.wd:hover{filter:brightness(1.5);}
+.wdc{background:#ff5f57;}.wdm{background:#febc2e;}.wdx{background:#28c840;}
+.wlbl{font-size:0.57rem;letter-spacing:0.1em;color:var(--dim);margin-left:2px;}
+.wico{font-size:0.78rem;margin-left:auto;}
+.wbdy{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+.wsc{flex:1;overflow-y:auto;padding:22px 26px;}
+.wsc::-webkit-scrollbar{width:3px;}
+.wsc::-webkit-scrollbar-thumb{background:var(--bdr);}
+.wrz{position:absolute;bottom:0;right:0;width:14px;height:14px;cursor:se-resize;background:linear-gradient(135deg,transparent 50%,var(--bdr) 50%);}
+
+/* HOME */
+.htag{display:inline-flex;align-items:center;gap:7px;font-size:0.54rem;letter-spacing:0.2em;color:var(--acc);border:1px solid rgba(255,255,255,0.09);padding:3px 9px;margin-bottom:15px;}
+.htag::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--acc);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(1.5);}}
+.hname{font-family:'Bebas Neue',sans-serif;font-size:3.2rem;letter-spacing:0.06em;color:var(--wht);line-height:0.9;}
+.hname em{font-family:'Crimson Pro',serif;font-style:italic;font-weight:300;color:var(--acc);font-size:2.8rem;}
+.hrole{font-size:0.62rem;color:var(--dim);letter-spacing:0.12em;margin:9px 0 16px;}
+.hrole span{color:var(--acc3);}
+.hbio{font-size:0.73rem;color:rgba(200,204,216,0.52);line-height:1.85;border-left:2px solid rgba(255,255,255,0.09);padding-left:13px;margin-bottom:20px;}
+.hbtns{display:flex;gap:8px;flex-wrap:wrap;}
+.obtn{font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:0.1em;padding:8px 16px;cursor:pointer;border:none;transition:all 0.2s;}
+.obp{background:var(--acc);color:#000;}.obp:hover{filter:brightness(1.1);transform:translateY(-1px);}
+.obg{background:transparent;color:var(--txt);border:1px solid var(--bdr2);}.obg:hover{border-color:var(--acc);color:var(--acc);}
+
+/* SKILLS */
+.sg{margin-bottom:16px;}
+.sgh{display:flex;align-items:center;gap:7px;margin-bottom:7px;font-size:0.56rem;letter-spacing:0.14em;color:var(--acc3);}
+.sgh::before{content:'▸';color:var(--acc);}
+.stags{display:flex;flex-wrap:wrap;gap:5px;}
+.st{font-size:0.56rem;padding:3px 8px;background:rgba(255,255,255,0.02);border:1px solid var(--bdr);color:var(--dim);transition:all 0.2s;cursor:default;}
+.st:hover{border-color:var(--acc);color:var(--acc);background:rgba(255,255,255,0.03);}
+
+/* PROJECTS */
+.pc{border:1px solid var(--bdr);padding:16px 18px;margin-bottom:2px;background:rgba(255,255,255,0.01);transition:all 0.2s;cursor:pointer;text-decoration:none;display:block;color:inherit;}
+.pc:hover{border-color:rgba(255,255,255,0.18);background:rgba(255,255,255,0.03);transform:translateX(4px);}
+.pct2{display:flex;align-items:flex-start;justify-content:space-between;gap:9px;margin-bottom:6px;}
+.pcn{font-family:'Bebas Neue',sans-serif;font-size:1.25rem;letter-spacing:0.08em;color:var(--wht);}
+.pca{color:var(--dim);font-size:0.78rem;transition:all 0.2s;margin-top:3px;}
+.pc:hover .pca{color:var(--acc);transform:translate(3px,-3px);}
+.pcd{font-size:0.66rem;color:var(--dim);line-height:1.7;margin-bottom:9px;}
+.ptags{display:flex;gap:5px;flex-wrap:wrap;}
+.pt{font-size:0.5rem;padding:2px 7px;background:rgba(61,156,255,0.05);border:1px solid rgba(61,156,255,0.2);color:var(--acc2);letter-spacing:0.05em;}
+
+/* ABOUT */
+.ar{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--bdr);font-size:0.68rem;}
+.ar:last-child{border:none;}
+.ak{color:var(--acc);min-width:105px;flex-shrink:0;font-size:0.56rem;letter-spacing:0.1em;}
+.av{color:var(--txt);line-height:1.6;}
+
+/* EDU */
+.ei{padding:20px 24px;position:relative;overflow:hidden;}
+.ei::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--acc),var(--acc2));}
+.eyr{font-size:0.5rem;color:var(--acc);letter-spacing:0.14em;margin-bottom:7px;}
+.edeg{font-family:'Bebas Neue',sans-serif;font-size:1.45rem;letter-spacing:0.05em;color:var(--wht);margin-bottom:3px;}
+.esch{font-size:0.6rem;color:var(--dim);letter-spacing:0.06em;}
+.ebar{margin-top:13px;}
+.ebl{font-size:0.5rem;color:var(--dim);letter-spacing:0.1em;margin-bottom:5px;display:flex;justify-content:space-between;}
+.ebt{height:2px;background:rgba(255,255,255,0.05);}
+.ebf{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));width:0%;transition:width 1.2s ease 0.3s;}
+
+/* TERMINAL */
+.trm{background:#000;flex:1;padding:16px;font-size:0.68rem;line-height:1.85;overflow-y:auto;min-height:180px;}
+.trm::-webkit-scrollbar{width:3px;}
+.trm::-webkit-scrollbar-thumb{background:#222;}
+.tl{color:#3a3a3a;}.tc{color:var(--acc);}.to{color:var(--dim);}.tk{color:var(--acc3);}.tv{color:var(--txt);}.ta{color:var(--acc2);}
+.tir{display:flex;align-items:center;gap:7px;padding:7px 16px;border-top:1px solid #111;background:#000;}
+.tpr{color:var(--acc);font-size:0.68rem;flex-shrink:0;white-space:nowrap;}
+.tin{background:transparent;border:none;outline:none;color:var(--wht);font-family:'Space Mono',monospace;font-size:0.68rem;flex:1;user-select:text;-webkit-user-select:text;}
+
+/* CONTACT */
+.ci{display:flex;align-items:center;gap:11px;padding:10px 13px;border:1px solid var(--bdr);margin-bottom:2px;text-decoration:none;color:inherit;transition:all 0.2s;font-size:0.66rem;}
+.ci:hover{border-color:rgba(255,255,255,0.18);background:rgba(255,255,255,0.03);}
+.ciico{font-size:1rem;flex-shrink:0;}
+.cilbl{font-size:0.5rem;color:var(--dim);letter-spacing:0.1em;text-transform:uppercase;}
+.cival{color:var(--txt);margin-top:1px;font-size:0.62rem;}
+
+/* CONTACT FORM */
+.cf{margin-top:14px;border-top:1px solid var(--bdr);padding-top:14px;}
+.cft{font-size:0.54rem;letter-spacing:0.15em;color:var(--acc);margin-bottom:11px;}
+.cfr{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.cfg{display:flex;flex-direction:column;gap:3px;margin-bottom:8px;}
+.cflbl{font-size:0.5rem;color:var(--dim);letter-spacing:0.1em;text-transform:uppercase;}
+.cfin,.cfta{background:rgba(255,255,255,0.03);border:1px solid var(--bdr);color:var(--txt);padding:7px 10px;font-family:'Space Mono',monospace;font-size:0.65rem;outline:none;transition:border-color 0.2s;width:100%;user-select:text;-webkit-user-select:text;}
+.cfin:focus,.cfta:focus{border-color:var(--acc);}
+.cfin::placeholder,.cfta::placeholder{color:var(--dim);}
+.cfta{resize:vertical;min-height:75px;}
+.cfbtn{width:100%;padding:10px;background:var(--acc);color:#000;border:none;font-family:'Space Mono',monospace;font-size:0.62rem;letter-spacing:0.1em;cursor:pointer;transition:all 0.2s;}
+.cfbtn:hover{filter:brightness(1.1);transform:translateY(-1px);}
+.cfbtn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+.cfnote{font-size:0.5rem;color:var(--dim);margin-top:7px;padding:7px;border:1px solid var(--bdr);line-height:1.7;}
+.cfnote a{color:var(--acc);text-decoration:none;}
+.cfnote code{color:var(--acc3);}
+
+/* CONTEXT MENU */
+#ctx{position:fixed;display:none;background:var(--surf);border:1px solid var(--bdr2);box-shadow:0 14px 36px rgba(0,0,0,0.6);z-index:800;min-width:175px;padding:4px 0;}
+.ci2{padding:7px 13px;font-size:0.6rem;letter-spacing:0.06em;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 0.1s;color:var(--dim);}
+.ci2:hover{background:rgba(255,255,255,0.05);color:var(--acc);}
+.csep{height:1px;background:var(--bdr);margin:3px 0;}
+.trow{display:flex;gap:6px;padding:5px 13px;}
+.tdot{width:15px;height:15px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all 0.18s;}
+.tdot:hover,.tdot.act{border-color:var(--wht);transform:scale(1.2);}
+
+/* NOTIFICATION */
+.notif{position:fixed;top:12px;right:12px;background:var(--surf);border:1px solid rgba(255,255,255,0.14);padding:11px 15px;font-size:0.6rem;z-index:9000;max-width:260px;transform:translateX(300px);transition:transform 0.4s cubic-bezier(0.23,1,0.32,1);box-shadow:0 8px 28px rgba(0,0,0,0.5);}
+.notif.show{transform:translateX(0);}
+.nt{color:var(--acc);letter-spacing:0.1em;margin-bottom:3px;font-size:0.56rem;}
+.nb{color:var(--dim);line-height:1.5;}
+
+/* scanlines */
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px);pointer-events:none;z-index:9990;}
+
+/* ═══ MOBILE ═══ */
+#mob{display:none;}
+@media(max-width:700px){
+  #desk,#tb{display:none;}
+  #boot{display:none!important;}
+  #mob{display:flex;flex-direction:column;height:100vh;overflow-y:auto;background:var(--bg);}
+
+  .mnav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:13px 20px;background:rgba(8,8,14,0.95);backdrop-filter:blur(14px);border-bottom:1px solid var(--bdr);}
+  .mnav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:0.14em;color:var(--acc);}
+  .mnav-st{font-size:0.52rem;color:var(--dim);letter-spacing:0.1em;display:flex;align-items:center;gap:5px;}
+  .mnav-st::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--acc);animation:pulse 2s infinite;}
+
+  .mhero{padding:44px 22px 36px;background:radial-gradient(ellipse 80% 50% at 50% 0%,var(--glow) 0%,transparent 60%),var(--bg);text-align:center;border-bottom:1px solid var(--bdr);}
+  .mhname{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;letter-spacing:0.05em;color:var(--wht);line-height:0.9;margin-bottom:7px;}
+  .mhname em{font-family:'Crimson Pro',serif;font-style:italic;font-weight:300;color:var(--acc);}
+  .mhrole{font-size:0.58rem;color:var(--dim);letter-spacing:0.11em;margin-bottom:16px;}
+  .mhbio{font-size:0.72rem;color:rgba(200,204,216,0.5);line-height:1.8;margin-bottom:22px;}
+  .mhbtns{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;}
+  .mhbtn{font-family:'Space Mono',monospace;font-size:0.56rem;letter-spacing:0.08em;padding:8px 15px;cursor:pointer;text-decoration:none;display:inline-block;border:none;}
+  .mhbtnp{background:var(--acc);color:#000;}
+  .mhbtng{background:transparent;color:var(--txt);border:1px solid var(--bdr2);}
+
+  .msec{padding:28px 22px;border-bottom:1px solid var(--bdr);}
+  .mslbl{font-size:0.52rem;letter-spacing:0.18em;color:var(--acc);text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:7px;}
+  .mslbl::before{content:'';width:18px;height:1px;background:var(--acc);}
+  .mstitle{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:0.05em;color:var(--wht);margin-bottom:18px;}
+
+  .msg{margin-bottom:12px;}
+  .msgh{font-size:0.54rem;letter-spacing:0.11em;color:var(--acc3);margin-bottom:6px;}
+  .mtags{display:flex;flex-wrap:wrap;gap:5px;}
+  .mtag{font-size:0.52rem;padding:3px 8px;background:rgba(255,255,255,0.03);border:1px solid var(--bdr);color:var(--dim);}
+
+  .mproj{padding:14px;border:1px solid var(--bdr);margin-bottom:7px;text-decoration:none;display:block;color:inherit;}
+  .mpname{font-family:'Bebas Neue',sans-serif;font-size:1.15rem;letter-spacing:0.07em;color:var(--wht);margin-bottom:5px;}
+  .mpdesc{font-size:0.65rem;color:var(--dim);line-height:1.65;margin-bottom:9px;}
+  .mparr{font-size:0.6rem;color:var(--acc);float:right;}
+
+  .mci{display:flex;align-items:center;gap:11px;padding:11px;border:1px solid var(--bdr);margin-bottom:5px;text-decoration:none;color:inherit;}
+  .mciico{font-size:1rem;}
+  .mcilbl{font-size:0.48rem;color:var(--dim);letter-spacing:0.1em;text-transform:uppercase;}
+  .mcival{font-size:0.62rem;color:var(--txt);margin-top:2px;}
+
+  .mform{margin-top:18px;}
+  .mfg{margin-bottom:10px;}
+  .mflbl{font-size:0.5rem;color:var(--dim);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;}
+  .mfin,.mfta{width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--bdr);color:var(--txt);padding:9px 11px;font-family:'Space Mono',monospace;font-size:0.68rem;outline:none;user-select:text;-webkit-user-select:text;}
+  .mfin:focus,.mfta:focus{border-color:var(--acc);}
+  .mfta{resize:vertical;min-height:85px;}
+  .mfbtn{width:100%;padding:11px;background:var(--acc);color:#000;border:none;font-family:'Space Mono',monospace;font-size:0.63rem;letter-spacing:0.1em;cursor:pointer;}
+
+  .mfoot{padding:22px;text-align:center;font-size:0.56rem;color:var(--dim);}
+  .mfoot strong{color:var(--txt);}
+}
+</style>
+</head>
+<body>
+
+<!-- BOOT -->
+<div id="boot">
+  <div class="b-logo">MH.OS</div>
+  <div class="b-sub">PORTFOLIO SYSTEM v3.0 — INITIALIZING</div>
+  <div class="b-bar"><div class="b-fill" id="bFill"></div></div>
+  <div class="b-log" id="bLog"></div>
+</div>
+
+<!-- DESKTOP -->
+<div id="desk">
+  <div class="wa wa1">MH</div>
+  <div class="wa wa2">backend</div>
+  <div class="di" style="top:14px;right:14px;" ondblclick="ow('home')"><div class="dib">🏠</div><div class="dil">Home.exe</div></div>
+  <div class="di" style="top:102px;right:14px;" ondblclick="ow('projects')"><div class="dib">📁</div><div class="dil">Projects</div></div>
+  <div class="di" style="top:190px;right:14px;" ondblclick="ow('skills')"><div class="dib">⚡</div><div class="dil">Skills.db</div></div>
+  <div class="di" style="top:278px;right:14px;" ondblclick="ow('terminal')"><div class="dib">⬛</div><div class="dil">Terminal</div></div>
+  <div class="di" style="top:366px;right:14px;" ondblclick="ow('contact')"><div class="dib">📡</div><div class="dil">Contact</div></div>
+</div>
+
+<!-- TASKBAR -->
+<div id="tb">
+  <div class="tb-logo" onclick="ow('home')">◈ MH.OS</div>
+  <div class="tb-apps">
+    <div class="tba on" id="tb-home" onclick="foo('home')"><span class="tbd"></span>Home</div>
+    <div class="tba" id="tb-skills" onclick="foo('skills')"><span class="tbd"></span>Skills</div>
+    <div class="tba" id="tb-projects" onclick="foo('projects')"><span class="tbd"></span>Projects</div>
+    <div class="tba" id="tb-about" onclick="foo('about')"><span class="tbd"></span>About</div>
+    <div class="tba" id="tb-edu" onclick="foo('edu')"><span class="tbd"></span>Education</div>
+    <div class="tba" id="tb-terminal" onclick="foo('terminal')"><span class="tbd"></span>Terminal</div>
+    <div class="tba" id="tb-contact" onclick="foo('contact')"><span class="tbd"></span>Contact</div>
+  </div>
+  <div class="tb-clk" id="tbClk"></div>
+</div>
+
+<!-- WINDOWS -->
+<div class="win" id="win-home" style="width:540px;top:62px;left:52px;">
+  <div class="wtb"><div class="wds"><div class="wd wdc" onclick="cw('home')"></div><div class="wd wdm" onclick="mw('home')"></div><div class="wd wdx"></div></div><div class="wlbl">HOME.EXE — Mohamed Hany Shaker</div><div class="wico">🏠</div></div>
+  <div class="wbdy"><div class="wsc">
+    <div class="htag">● AVAILABLE FOR OPPORTUNITIES</div>
+    <div class="hname">MOHAMED<br><em>Hany</em> SHAKER</div>
+    <div class="hrole">.NET Backend Developer <span>·</span> CS @ Zagazig University</div>
+    <p class="hbio">Building robust, scalable backend systems with C# and ASP.NET Core. Passionate about clean architecture and writing code that actually matters.</p>
+    <div class="hbtns">
+      <button class="obtn obp" onclick="ow('projects')">▶ Projects</button>
+      <button class="obtn obg" onclick="ow('terminal')">⬛ Terminal</button>
+      <button class="obtn obg" onclick="ow('contact')">📡 Contact</button>
+    </div>
+  </div></div>
+  <div class="wrz"></div>
+</div>
+
+<div class="win hide" id="win-skills" style="width:480px;top:72px;left:640px;">
+  <div class="wtb"><div class="wds"><div class="wd wdc" onclick="cw('skills')"></div><div class="wd wdm" onclick="mw('skills')"></div><div class="wd wdx"></div></div><div class="wlbl">SKILLS.DB — Tech Stack</div><div class="wico">⚡</div></div>
+  <div class="wbdy"><div class="wsc">
+    <div class="sg"><div class="sgh">LANGUAGES</div><div class="stags"><span class="st">C#</span><span class="st">C++</span><span class="st">Python</span><span class="st">SQL</span><span class="st">HTML/CSS</span></div></div>
+    <div class="sg"><div class="sgh">BACKEND</div><div class="stags"><span class="st">.NET Framework</span><span class="st">ASP.NET Core</span><span class="st">LINQ</span><span class="st">EF Core</span></div></div>
+    <div class="sg"><div class="sgh">DATABASE</div><div class="stags"><span class="st">SQL Server</span><span class="st">Database Design</span><span class="st">T-SQL</span></div></div>
+    <div class="sg"><div class="sgh">CS FUNDAMENTALS</div><div class="stags"><span class="st">OOP</span><span class="st">Data Structures</span><span class="st">Algorithms</span><span class="st">SOLID</span><span class="st">Clean Architecture</span><span class="st">Problem Solving</span></div></div>
+    <div class="sg"><div class="sgh">CLOUD & DEVOPS</div><div class="stags"><span class="st">Git</span><span class="st">GitHub</span><span class="st">CI/CD Basics</span><span class="st">Docker Basics</span></div></div>
+    <div class="sg"><div class="sgh">TOOLS</div><div class="stags"><span class="st">Visual Studio</span><span class="st">VS Code</span><span class="st">SSMS</span><span class="st">Postman</span></div></div>
+  </div></div>
+  <div class="wrz"></div>
+</div>
+
+<div class="win hide" id="win-projects" style="width:520px;top:185px;left:105px;">
+  <div class="wtb"><div class="wds"><div class="wd wdc" onclick="cw('projects')"></div><div class="wd wdm" onclick="mw('projects')"></div><div class="wd wdx"></div></div><div class="wlbl">PROJECTS — /repos/mohamed-haniii</div><div class="wico">📁</div></div>
+  <div class="wbdy"><div class="wsc">
+    <a href="https://github.com/mohamed-haniii/projects" target="_blank" class="pc">
+      <div class="pct2"><div class="pcn">BANK SYSTEM UI</div><div class="pca">↗</div></div>
+      <div class="pcd">C++ banking simulator — client management, user auth, transactions. Layered OOP architecture with clean separation of concerns.</div>
+      <div class="ptags"><span class="pt">C++</span><span class="pt">OOP</span><span class="pt">Data Structures</span><span class="pt">Algorithms</span></div>
+    </a>
+    <a href="https://github.com/mohamed-haniii/-Rock-Paper-Scissors-" target="_blank" class="pc">
+      <div class="pct2"><div class="pcn">ROCK PAPER SCISSORS</div><div class="pca">↗</div></div>
+      <div class="pcd">Console game in C++ — clean logic, input validation, replayability. Focused exercise in control flow and user interaction.</div>
+      <div class="ptags"><span class="pt">C++</span><span class="pt">Game Logic</span><span class="pt">Console App</span></div>
+    </a>
+  </div></div>
+  <div class="wrz"></div>
+</div>
+
+<div class="win hide" id="win-about" style="width:440px;top:345px;left:625px;">
+  <div class="wtb"><div class="wds"><div class="wd wdc" onclick="cw('about')"></div><div class="wd wdm" onclick="mw('about')"></div><div class="wd wdx"></div></div><div class="wlbl">ABOUT.JSON — Mohamed Hany</div><div class="wico">👤</div></div>
+  <div class="wbdy"><div class="wsc">
+    <div class="ar"><div class="ak">name</div><div class="av">Mohamed Hany Shaker</div></div>
+    <div class="ar"><div class="ak">role</div><div class="av">.NET Backend Developer</div></div>
+    <div class="ar"><div class="ak">location</div><div class="av">Egypt 🇪🇬</div></div>
+    <div class="ar"><div class="ak">university</div><div class="av">Zagazig University — CS</div></div>
+    <div class="ar"><div class="ak">year</div><div class="av">3rd Year · Graduation 2027</div></div>
+    <div class="ar"><div class="ak">focus</div><div class="av">Clean Architecture · SOLID · APIs</div></div>
+    <div class="ar"><div class="ak">learning</div><div class="av">ASP.NET Core · Docker · CI/CD</div></div>
+    <div class="ar"><div class="ak">status</div><div class="av" style="color:var(--acc)">● Available for opportunities</div></div>
+  </div></div>
+  <div class="wrz"></div>
+</div>
+
+<div class="win hide" id="win-edu" style="width:420px;top:52px;left:480px;">
+  <div class="wtb"><div class="wds"><div class="wd wdc" onclick="cw('edu')"></div><div class="wd wdm" onclick="mw('edu')"></div><div class="wd wdx"></div></div><div class="wlbl">EDUCATION.LOG</div><div class="wico">🎓</div></div>
+  <div class="wbdy"><div class="wsc" style="padding:0;">
+    <div class="ei">
+      <div class="eyr">2022 — 2027 · IN PROGRESS</div>
+      <div class="edeg">BACHELOR OF<br>COMPUTER SCIENCE</div>
+      <div class="esch">Faculty of Computer Science · Zagazig University</div>
+      <div class="ebar"><div class="ebl"><span>PROGRESS</span><span>60%</span></div><div class="ebt"><div class="ebf" id="eduBar"></div></div></div>
+    </div>
+  </div></div>
+  <div class="wrz"></div>
+</div>
+
+<div class="win hide" id="win-terminal" style="width:480px;top:110px;left:320px;">
+  <div class="wtb"><div class="wds"><div class="wd wdc" onclick="cw('terminal')"></div><div class="wd wdm" onclick="mw('terminal')"></div><div class="wd wdx"></div></div><div class="wlbl">TERMINAL — mh@portfolio:~$</div><div class="wico">⬛</div></div>
+  <div class="wbdy" style="display:flex;flex-direction:column;">
+    <div class="trm" id="trmBody">
+      <div class="tl">MH.OS Terminal v3.0</div>
+      <div class="tl">Type <span class="tc">help</span> for available commands.</div><br>
+    </div>
+    <div class="tir"><span class="tpr">mh@portfolio:~$</span><input type="text" class="tin" id="trmIn" placeholder="type a command..." autocomplete="off" spellcheck="false"></div>
+  </div>
+  <div class="wrz"></div>
+</div>
+
+<div class="win hide" id="win-contact" style="width:420px;top:400px;left:70px;">
+  <div class="wtb"><div class="wds"><div class="wd wdc" onclick="cw('contact')"></div><div class="wd wdm" onclick="mw('contact')"></div><div class="wd wdx"></div></div><div class="wlbl">CONTACT — Let's work together</div><div class="wico">📡</div></div>
+  <div class="wbdy"><div class="wsc" style="padding:13px;">
+    <a href="mailto:mh0112772901000@gmail.com" class="ci"><div class="ciico">✉️</div><div><div class="cilbl">Email</div><div class="cival">mh0112772901000@gmail.com</div></div></a>
+    <a href="tel:+201118859422" class="ci"><div class="ciico">📞</div><div><div class="cilbl">Phone</div><div class="cival">+20 111 885 9422</div></div></a>
+    <a href="https://eg.linkedin.com/in/mohamed-hany-281950336" target="_blank" class="ci"><div class="ciico">💼</div><div><div class="cilbl">LinkedIn</div><div class="cival">in/mohamed-hany-281950336</div></div></a>
+    <a href="https://github.com/mohamed-haniii" target="_blank" class="ci"><div class="ciico">🐙</div><div><div class="cilbl">GitHub</div><div class="cival">github.com/mohamed-haniii</div></div></a>
+    <div class="cf">
+      <div class="cft">▸ SEND ME A MESSAGE</div>
+      <div class="cfr">
+        <div class="cfg"><div class="cflbl">Name</div><input class="cfin" id="cfName" placeholder="Your name"></div>
+        <div class="cfg"><div class="cflbl">Email</div><input class="cfin" id="cfEmail" type="email" placeholder="your@email.com"></div>
+      </div>
+      <div class="cfg"><div class="cflbl">Subject</div><input class="cfin" id="cfSubject" placeholder="Job opportunity / Collab"></div>
+      <div class="cfg"><div class="cflbl">Message</div><textarea class="cfta" id="cfMsg" placeholder="Tell me about your project..."></textarea></div>
+      <button class="cfbtn" id="cfBtn" onclick="sendMail()">SEND MESSAGE →</button>
+      <div class="cfnote">⚙ To activate: replace <code>YOUR_PUBLIC_KEY</code>, <code>YOUR_SERVICE_ID</code>, <code>YOUR_TEMPLATE_ID</code> at top of JS.<br>Get them free → <a href="https://emailjs.com" target="_blank">emailjs.com</a></div>
+    </div>
+  </div></div>
+  <div class="wrz"></div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div id="ctx">
+  <div class="ci2" onclick="openAll()">◈ Open All Windows</div>
+  <div class="ci2" onclick="arrange()">⊞ Arrange Windows</div>
+  <div class="csep"></div>
+  <div class="ci2" style="cursor:default;color:var(--dim);font-size:0.54rem;letter-spacing:0.12em;">🎨 THEME</div>
+  <div class="trow">
+    <div class="tdot act" style="background:#00ff9d;" onclick="setTheme('',this)" title="Green"></div>
+    <div class="tdot" style="background:#ffb830;" onclick="setTheme('amber',this)" title="Amber"></div>
+    <div class="tdot" style="background:#3d9cff;" onclick="setTheme('blue',this)" title="Blue"></div>
+    <div class="tdot" style="background:#ff4757;" onclick="setTheme('red',this)" title="Red"></div>
+    <div class="tdot" style="background:#e879f9;" onclick="setTheme('pink',this)" title="Pink"></div>
+  </div>
+  <div class="csep"></div>
+  <div class="ci2" onclick="ow('terminal')">⬛ Open Terminal</div>
+  <div class="ci2" onclick="ntf('MH.OS v3','Portfolio by Mohamed Hany Shaker')">ℹ About MH.OS</div>
+</div>
+
+<!-- NOTIF -->
+<div class="notif" id="notif"><div class="nt" id="ntT">MH.OS</div><div class="nb" id="ntB"></div></div>
+
+<!-- MOBILE -->
+<div id="mob">
+  <div class="mnav"><div class="mnav-logo">MH.OS</div><div class="mnav-st">AVAILABLE</div></div>
+  <div class="mhero">
+    <div class="mhname">MOHAMED<br><em>Hany</em></div>
+    <div class="mhrole">.NET Backend Developer · CS @ Zagazig</div>
+    <p class="mhbio">Building scalable backend systems with C# and ASP.NET Core. Passionate about clean architecture.</p>
+    <div class="mhbtns"><a href="https://github.com/mohamed-haniii" target="_blank" class="mhbtn mhbtnp">GitHub ↗</a><a href="mailto:mh0112772901000@gmail.com" class="mhbtn mhbtng">Email</a></div>
+  </div>
+  <div class="msec">
+    <div class="mslbl">Tech Stack</div><div class="mstitle">SKILLS</div>
+    <div class="msg"><div class="msgh">LANGUAGES</div><div class="mtags"><span class="mtag">C#</span><span class="mtag">C++</span><span class="mtag">Python</span><span class="mtag">SQL</span></div></div>
+    <div class="msg"><div class="msgh">BACKEND</div><div class="mtags"><span class="mtag">ASP.NET Core</span><span class="mtag">EF Core</span><span class="mtag">LINQ</span></div></div>
+    <div class="msg"><div class="msgh">DATABASE</div><div class="mtags"><span class="mtag">SQL Server</span><span class="mtag">T-SQL</span></div></div>
+    <div class="msg"><div class="msgh">DEVOPS</div><div class="mtags"><span class="mtag">Git</span><span class="mtag">Docker</span><span class="mtag">CI/CD</span></div></div>
+  </div>
+  <div class="msec">
+    <div class="mslbl">What I Built</div><div class="mstitle">PROJECTS</div>
+    <a href="https://github.com/mohamed-haniii/projects" target="_blank" class="mproj"><span class="mparr">↗</span><div class="mpname">BANK SYSTEM UI</div><div class="mpdesc">C++ banking simulator — OOP, client mgmt, transactions.</div><div class="mtags"><span class="mtag">C++</span><span class="mtag">OOP</span></div></a>
+    <a href="https://github.com/mohamed-haniii/-Rock-Paper-Scissors-" target="_blank" class="mproj"><span class="mparr">↗</span><div class="mpname">ROCK PAPER SCISSORS</div><div class="mpdesc">Console game — clean logic, input validation.</div><div class="mtags"><span class="mtag">C++</span><span class="mtag">Game Logic</span></div></a>
+  </div>
+  <div class="msec">
+    <div class="mslbl">Get In Touch</div><div class="mstitle">CONTACT</div>
+    <a href="mailto:mh0112772901000@gmail.com" class="mci"><div class="mciico">✉️</div><div><div class="mcilbl">Email</div><div class="mcival">mh0112772901000@gmail.com</div></div></a>
+    <a href="tel:+201118859422" class="mci"><div class="mciico">📞</div><div><div class="mcilbl">Phone</div><div class="mcival">+20 111 885 9422</div></div></a>
+    <a href="https://eg.linkedin.com/in/mohamed-hany-281950336" target="_blank" class="mci"><div class="mciico">💼</div><div><div class="mcilbl">LinkedIn</div><div class="mcival">in/mohamed-hany-281950336</div></div></a>
+    <a href="https://github.com/mohamed-haniii" target="_blank" class="mci"><div class="mciico">🐙</div><div><div class="mcilbl">GitHub</div><div class="mcival">github.com/mohamed-haniii</div></div></a>
+    <div class="mform">
+      <div class="mfg"><div class="mflbl">Name</div><input class="mfin" id="mfName" placeholder="Your name"></div>
+      <div class="mfg"><div class="mflbl">Email</div><input class="mfin" id="mfEmail" type="email" placeholder="your@email.com"></div>
+      <div class="mfg"><div class="mflbl">Message</div><textarea class="mfta" id="mfMsg" placeholder="Tell me about your project..."></textarea></div>
+      <button class="mfbtn" onclick="sendMailMob()">SEND MESSAGE →</button>
+    </div>
+  </div>
+  <div class="mfoot">© 2025 <strong>Mohamed Hany Shaker</strong>. All rights reserved.</div>
+</div>
+
+<script>
+// ══ EMAILJS CONFIG ══ replace these 3 values with yours from emailjs.com
+const EJ_KEY      = 'YOUR_PUBLIC_KEY';
+const EJ_SERVICE  = 'YOUR_SERVICE_ID';
+const EJ_TEMPLATE = 'YOUR_TEMPLATE_ID';
+
+// init emailjs
+if(EJ_KEY !== 'YOUR_PUBLIC_KEY'){
+  emailjs.init(EJ_KEY);
+}
+
+// ══ THEME ══
+function setTheme(name, dot){
+  document.documentElement.setAttribute('data-theme', name);
+  document.querySelectorAll('.tdot').forEach(d=>d.classList.remove('act'));
+  if(dot) dot.classList.add('act');
+  hideCtx();
+  // update terminal accent color variable awareness
+  const acc = getComputedStyle(document.documentElement).getPropertyValue('--acc').trim();
+  ntf('🎨 Theme Changed', 'Try: theme green / amber / blue / red / pink');
+}
+
+// ══ BOOT ══
+const bootLogs = ['Loading kernel...','Mounting /projects... OK','Loading skills.db... OK','Starting desktop env...','Welcome, visitor.'];
+let bi=0;
+const bfill = document.getElementById('b-fill') || (() => { const el = document.querySelector('.b-fill'); return el; })();
+
+function bootStep(){
+  const fill = document.querySelector('.b-fill');
+  const log  = document.querySelector('.b-log');
+  if(!fill) return;
+  if(bi >= bootLogs.length){
+    setTimeout(()=>{
+      document.getElementById('boot').classList.add('out');
+      setTimeout(()=>{ document.getElementById('boot').style.display='none'; ntf('Welcome to MH.OS','Double-click icons · right-click desktop · type help in terminal'); }, 800);
+      setTimeout(()=>{ const b = document.getElementById('eduBar'); if(b) b.style.width='60%'; }, 1200);
+    }, 400);
+    return;
+  }
+  fill.style.width = Math.round((bi+1)/bootLogs.length*100)+'%';
+  if(log) log.innerHTML += bootLogs[bi]+'<br>';
+  bi++;
+  setTimeout(bootStep, 280 + Math.random()*180);
+}
+setTimeout(bootStep, 500);
+
+// ══ CLOCK ══
+function tick(){
+  const n=new Date();
+  const t=n.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  const d=n.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+  const el=document.getElementById('tb-clk');
+  if(el) el.innerHTML=t+'<br>'+d;
+}
+tick(); setInterval(tick,1000);
+
+// ══ WINDOW MANAGER ══
+let zTop=10;
+const wMap={};
+
+document.querySelectorAll('.win').forEach(w=>{
+  const id=w.id.replace('win-','');
+  wMap[id]={el:w, open:!w.classList.contains('hide')};
+  w.addEventListener('mousedown',()=>fw(id));
+  makeDrag(w); makeResize(w);
+});
+
+function fw(id){
+  const w=wMap[id]; if(!w) return;
+  zTop++; w.el.style.zIndex=zTop;
+  document.querySelectorAll('.win').forEach(e=>e.classList.remove('foc'));
+  w.el.classList.add('foc');
+  document.querySelectorAll('.tba').forEach(t=>t.classList.remove('on'));
+  const tb=document.getElementById('tb-'+id);
+  if(tb) tb.classList.add('on');
+}
+function ow(id){
+  const w=wMap[id]; if(!w) return;
+  w.el.classList.remove('hide'); w.open=true; fw(id);
+}
+function cw(id){
+  const w=wMap[id]; if(!w) return;
+  w.el.classList.add('hide'); w.open=false;
+  const tb=document.getElementById('tb-'+id);
+  if(tb) tb.classList.remove('on');
+}
+function mw(id){
+  const w=wMap[id]; if(!w) return;
+  w.el.classList.add('hide');
+  const tb=document.getElementById('tb-'+id);
+  if(tb) tb.classList.remove('on');
+}
+function foOrOpen(id){ const w=wMap[id]; if(!w) return; w.el.classList.contains('hide')?ow(id):fw(id); }
+function openAll(){ Object.keys(wMap).forEach(id=>ow(id)); hideCtx(); }
+function arrange(){
+  const ids=Object.keys(wMap); const cols=3;
+  ids.forEach((id,i)=>{ wMap[id].el.style.left=(i%cols*340+20)+'px'; wMap[id].el.style.top=(Math.floor(i/cols)*280+20)+'px'; ow(id); });
+  hideCtx();
+}
+
+// ══ DRAG ══
+function makeDrag(el){
+  const tb=el.querySelector('.wtb'); if(!tb) return;
+  let ox,oy,sx,sy;
+  tb.addEventListener('mousedown',e=>{
+    if(e.target.classList.contains('wd')) return;
+    sx=e.clientX; sy=e.clientY; ox=el.offsetLeft; oy=el.offsetTop;
+    const mm=e2=>{ el.style.left=(ox+e2.clientX-sx)+'px'; el.style.top=Math.max(0,oy+e2.clientY-sy)+'px'; };
+    const mu=()=>{ document.removeEventListener('mousemove',mm); document.removeEventListener('mouseup',mu); };
+    document.addEventListener('mousemove',mm); document.addEventListener('mouseup',mu);
+  });
+}
+
+// ══ RESIZE ══
+function makeResize(el){
+  const h=el.querySelector('.wrz'); if(!h) return;
+  h.addEventListener('mousedown',e=>{
+    e.stopPropagation();
+    const sx=e.clientX,sy=e.clientY,sw=el.offsetWidth,sh=el.offsetHeight;
+    const mm=e2=>{ el.style.width=Math.max(260,sw+e2.clientX-sx)+'px'; el.style.height=Math.max(160,sh+e2.clientY-sy)+'px'; };
+    const mu=()=>{ document.removeEventListener('mousemove',mm); document.removeEventListener('mouseup',mu); };
+    document.addEventListener('mousemove',mm); document.addEventListener('mouseup',mu);
+  });
+}
+
+// ══ CONTEXT MENU ══
+const ctx=document.getElementById('ctx');
+document.getElementById('desk').addEventListener('contextmenu',e=>{ e.preventDefault(); ctx.style.display='block'; ctx.style.left=Math.min(e.clientX,window.innerWidth-200)+'px'; ctx.style.top=Math.min(e.clientY,window.innerHeight-180)+'px'; });
+document.addEventListener('click',hideCtx);
+function hideCtx(){ ctx.style.display='none'; }
+
+// ══ NOTIFICATIONS ══
+let nTimer;
+function ntf(title,body){
+  document.getElementById('ntT').textContent=title;
+  document.getElementById('ntB').textContent=body;
+  const n=document.getElementById('notif');
+  n.classList.add('show');
+  clearTimeout(nTimer); nTimer=setTimeout(()=>n.classList.remove('show'),3800);
+}
+
+// ══ TERMINAL ══
+const tBody=document.getElementById('trmBody');
+const tIn=document.getElementById('trmIn');
+
+const CMDS={
+  help:()=>`<div class="to">Commands available:</div>
+<div class="to"> <span class="tc">whoami</span>         — about me</div>
+<div class="to"> <span class="tc">skills</span>         — tech stack</div>
+<div class="to"> <span class="tc">projects</span>       — my work</div>
+<div class="to"> <span class="tc">contact</span>        — reach me</div>
+<div class="to"> <span class="tc">open &lt;app&gt;</span>     — open window</div>
+<div class="to"> <span class="tc">theme &lt;name&gt;</span>  — green|amber|blue|red|pink</div>
+<div class="to"> <span class="tc">clear</span>          — clear screen</div>`,
+  whoami:()=>`<div class="to"><span class="tk">name</span>  : <span class="tv">Mohamed Hany Shaker</span></div>
+<div class="to"><span class="tk">role</span>  : <span class="tv">.NET Backend Developer</span></div>
+<div class="to"><span class="tk">uni</span>   : <span class="tv">Zagazig University · CS · Year 3</span></div>
+<div class="to"><span class="tk">status</span>: <span class="tc">● available for opportunities</span></div>`,
+  skills:()=>`<div class="to"><span class="tk">languages</span> : <span class="tv">C#  C++  Python  SQL</span></div>
+<div class="to"><span class="tk">backend</span>   : <span class="tv">ASP.NET Core  EF Core  LINQ</span></div>
+<div class="to"><span class="tk">database</span>  : <span class="tv">SQL Server  T-SQL</span></div>
+<div class="to"><span class="tk">devops</span>    : <span class="tv">Git  Docker  CI/CD</span></div>
+<div class="to"><span class="tk">tools</span>     : <span class="tv">VS  VS Code  SSMS  Postman</span></div>`,
+  projects:()=>`<div class="to"><span class="ta">01</span> <span class="tv">Bank System UI</span> — C++ OOP banking simulator</div>
+<div class="to">   ↳ <span class="tc">github.com/mohamed-haniii/projects</span></div>
+<div class="to"><span class="ta">02</span> <span class="tv">Rock Paper Scissors</span> — Console game in C++</div>
+<div class="to">   ↳ <span class="tc">github.com/mohamed-haniii/-Rock-Paper-Scissors-</span></div>`,
+  contact:()=>`<div class="to"><span class="tk">email</span>    : <span class="tv">mh0112772901000@gmail.com</span></div>
+<div class="to"><span class="tk">phone</span>    : <span class="tv">+20 111 885 9422</span></div>
+<div class="to"><span class="tk">github</span>   : <span class="tv">github.com/mohamed-haniii</span></div>
+<div class="to"><span class="tk">linkedin</span> : <span class="tv">in/mohamed-hany-281950336</span></div>`,
+  clear:()=>'__clear__',
+};
+
+// theme via terminal
+const THEMES={green:'',amber:'amber',blue:'blue',red:'red',pink:'pink'};
+
+function tRun(raw){
+  const cmd=raw.trim().toLowerCase();
+  const d=document.createElement('div');
+
+  if(cmd.startsWith('open ')){
+    const app=cmd.slice(5).trim();
+    const valid=['home','skills','projects','about','edu','contact','terminal'];
+    if(valid.includes(app)){
+      d.innerHTML=`<div class="tc">$ ${raw}</div><div class="to">Opening ${app}... <span class="tc">✓</span></div>`;
+      tBody.appendChild(d); ow(app);
+    } else {
+      d.innerHTML=`<div class="tc">$ ${raw}</div><div class="to" style="color:var(--red)">Unknown app: '${app}'. Valid: ${valid.join(', ')}</div>`;
+      tBody.appendChild(d);
+    }
+    tBody.scrollTop=99999; return;
+  }
+
+  if(cmd.startsWith('theme ')){
+    const name=cmd.slice(6).trim();
+    if(THEMES.hasOwnProperty(name)){
+      setTheme(THEMES[name], null);
+      d.innerHTML=`<div class="tc">$ ${raw}</div><div class="to">Theme set to <span class="tv">${name}</span> <span class="tc">✓</span></div>`;
+    } else {
+      d.innerHTML=`<div class="tc">$ ${raw}</div><div class="to" style="color:var(--red)">Unknown theme. Options: ${Object.keys(THEMES).join(' | ')}</div>`;
+    }
+    tBody.appendChild(d); tBody.scrollTop=99999; return;
+  }
+
+  if(CMDS[cmd]){
+    const out=CMDS[cmd]();
+    if(out==='__clear__'){ tBody.innerHTML='<div class="tl">Terminal cleared.</div><br>'; return; }
+    d.innerHTML=`<div class="tc">$ ${raw}</div>${out}<br>`;
+    tBody.appendChild(d);
+  } else if(cmd){
+    d.innerHTML=`<div class="tc">$ ${raw}</div><div class="to" style="color:var(--red)">command not found: ${cmd}. Try <span class="tc">help</span></div>`;
+    tBody.appendChild(d);
+  }
+  tBody.scrollTop=99999;
+}
+
+tIn.addEventListener('keydown',e=>{ if(e.key==='Enter'){ const v=tIn.value; tIn.value=''; tRun(v); } });
+document.getElementById('win-terminal').addEventListener('mousedown',e=>{ if(!e.target.classList.contains('wd')) setTimeout(()=>tIn.focus(),0); });
+
+// ══ EMAILJS SEND ══
+async function sendMail(){
+  const name=document.getElementById('cfName').value.trim();
+  const email=document.getElementById('cfEmail').value.trim();
+  const subject=document.getElementById('cfSubject').value.trim();
+  const msg=document.getElementById('cfMsg').value.trim();
+  const btn=document.getElementById('cfBtn');
+  if(!name||!email||!msg){ ntf('⚠ Missing Fields','Please fill name, email and message.'); return; }
+  if(EJ_KEY==='YOUR_PUBLIC_KEY'){ ntf('⚙ Setup Required','Add your EmailJS keys to activate sending. See the note in Contact window.'); return; }
+  btn.disabled=true; btn.textContent='SENDING...';
+  try{
+    await emailjs.send(EJ_SERVICE, EJ_TEMPLATE, {from_name:name,from_email:email,subject:subject||'Portfolio Contact',message:msg});
+    btn.textContent='SENT ✓'; btn.style.background='#28c840';
+    ntf('✉ Message Sent!',`Thanks ${name}, I'll get back to you soon.`);
+    setTimeout(()=>{ btn.textContent='SEND MESSAGE →'; btn.style.background=''; btn.disabled=false; ['cfName','cfEmail','cfSubject','cfMsg'].forEach(id=>document.getElementById(id).value=''); },3000);
+  } catch(err){
+    btn.textContent='FAILED — RETRY'; btn.disabled=false;
+    ntf('✕ Send Failed','Check your EmailJS config.');
+  }
+}
+
+async function sendMailMob(){
+  const name=document.getElementById('mfName').value.trim();
+  const email=document.getElementById('mfEmail').value.trim();
+  const msg=document.getElementById('mfMsg').value.trim();
+  if(!name||!email||!msg){ alert('Please fill all fields.'); return; }
+  if(EJ_KEY==='YOUR_PUBLIC_KEY'){ alert('EmailJS not configured yet.'); return; }
+  try{
+    await emailjs.send(EJ_SERVICE, EJ_TEMPLATE, {from_name:name,from_email:email,subject:'Mobile Contact',message:msg});
+    alert('Message sent! ✓');
+  } catch(e){ alert('Send failed. Check EmailJS config.'); }
+}
+
+// ══ TASKBAR BUTTONS ══
+document.getElementById('tb-home').onclick=()=>foOrOpen('home');
+document.getElementById('tb-skills').onclick=()=>foOrOpen('skills');
+document.getElementById('tb-projects').onclick=()=>foOrOpen('projects');
+document.getElementById('tb-about').onclick=()=>foOrOpen('about');
+document.getElementById('tb-edu').onclick=()=>foOrOpen('edu');
+document.getElementById('tb-terminal').onclick=()=>foOrOpen('terminal');
+document.getElementById('tb-contact').onclick=()=>foOrOpen('contact');
+</script>
+</body>
+</html>
